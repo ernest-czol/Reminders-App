@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Reminders</string>
+    <string name="pre_alert_default_option">No pre-alert</string>
+
+    <string-array name="alertOptionsIntervals">
+        <item>minutes</item>
+        <item>hours</item>
+        <item>days</item>
+    </string-array>
+</resources>
