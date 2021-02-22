@@ -1,36 +1,39 @@
-package com.example.reminders.activity
+package com.example.reminders.ui
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.example.reminders.R
-import com.example.reminders.constants.ConstantsAlarm.PRE_ALARM_OPTION
-import com.example.reminders.constants.ConstantsDatabase.COLLECTION_REMINDERS
-import com.example.reminders.constants.ConstantsNotification.PRE_ALARM_TITLE_NOTIFICATION
+import com.example.reminders.activity.PreAlertOptionActivity
+import com.example.reminders.constants.ConstantsAlarm
+import com.example.reminders.constants.ConstantsDatabase
+import com.example.reminders.constants.ConstantsNotification
 import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
 import com.example.reminders.service.AlarmService
-import com.example.reminders.util.RandomUtil.getRandomInt
-import com.example.reminders.util.TimeUtil.computeTimeInMillis
-import com.example.reminders.util.TimeUtil.getTimeUnit
-import com.example.reminders.util.TimeUtil.getValue
+import com.example.reminders.util.RandomUtil
+import com.example.reminders.util.TAG
+import com.example.reminders.util.TimeUtil
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_edit_reminder.*
 
-private const val TAG = "NewReminder"
 
-class NewReminderActivity : AppCompatActivity() {
+class AddReminderFragment : Fragment() {
     lateinit var editTextTitle: EditText
     lateinit var editTextNotes: EditText
     lateinit var alarmService: AlarmService
@@ -44,32 +47,45 @@ class NewReminderActivity : AppCompatActivity() {
 
     lateinit var preAlarmFieldReminder: TextView
     val arrayPreAlerts = ArrayList<PreAlarm>()
+    lateinit var thisContext: Context
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_edit_reminder)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        alarmService = AlarmService(thisContext)
 
-        alarmService = AlarmService(this)
+        val addButton: Button
+        val setAlarmButton: Button
+        val preAlarmAddButton: FloatingActionButton
 
-        title = "Add reminder"
+//        title = "Add reminder"
+        view.apply {
+            editTextTitle = findViewById(R.id.edit_title_reminder)
+            editTextNotes = findViewById(R.id.edit_notes_reminder)
+            addButton = findViewById(R.id.save_button)
+            setAlarmButton = findViewById(R.id.setTimeButton)
+            preAlarmAddButton = findViewById(R.id.pre_alarm_add_button)
+        }
 
-        editTextTitle = findViewById(R.id.edit_title_reminder)
-        editTextNotes = findViewById(R.id.edit_notes_reminder)
-
-        val addButton = findViewById<Button>(R.id.save_button)
         addButton.setOnClickListener(AddButtonClick())
 
-        val setAlarmButton = findViewById<Button>(R.id.setTimeButton)
         setAlarmButton.setOnClickListener{
             setAlarm()
         }
 
-        val preAlarmAddButton = findViewById<FloatingActionButton>(R.id.pre_alarm_add_button)
         preAlarmAddButton.setOnClickListener{
             addPreAlarmField()
         }
 
         //setRepetitive.setOnClickListener { setAlarm { alarmService.setRepetitiveAlarm(it) } }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        thisContext = container?.context!!
+
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_add_reminder, container, false)
     }
 
     inner class AddButtonClick : View.OnClickListener {
@@ -82,19 +98,21 @@ class NewReminderActivity : AppCompatActivity() {
                 return
             }
 
-            val idAlarm = getRandomInt()
+            val idAlarm = RandomUtil.getRandomInt()
 
             alarmService.setExactAlarm(timeInMillisReminder, idAlarm, title, notes)
 
             setPreAlarms(title)
 
-            val collectionReference: CollectionReference = FirebaseFirestore.getInstance().collection(COLLECTION_REMINDERS)
+            val collectionReference: CollectionReference = FirebaseFirestore.getInstance().collection(
+                ConstantsDatabase.COLLECTION_REMINDERS
+            )
             val reminder = Reminder(title, notes, idAlarm, yearReminder, monthReminder, dayReminder,
                 hourReminder, minuteReminder, timeInMillisReminder)
             reminder.preAlarms = arrayPreAlerts
             collectionReference.add(reminder)
 
-            finish()
+            fragmentManager?.popBackStack()
         }
     }
 
@@ -102,7 +120,8 @@ class NewReminderActivity : AppCompatActivity() {
         for (alarm in arrayPreAlerts) {
             alarm.timeInMillis = timeInMillisReminder - alarm.timeInMillis
 
-            alarmService.setExactAlarm(alarm.timeInMillis, alarm.idPreAlarm, PRE_ALARM_TITLE_NOTIFICATION, title)
+            alarmService.setExactAlarm(alarm.timeInMillis, alarm.idPreAlarm,
+                ConstantsNotification.PRE_ALARM_TITLE_NOTIFICATION, title)
         }
     }
 
@@ -111,7 +130,7 @@ class NewReminderActivity : AppCompatActivity() {
             this.set(Calendar.SECOND, 0)
             this.set(Calendar.MILLISECOND, 0)
             DatePickerDialog(
-                this@NewReminderActivity,
+                thisContext,
                 0,
                 { _, year, month, day ->
                     this.set(Calendar.YEAR, year)
@@ -123,7 +142,7 @@ class NewReminderActivity : AppCompatActivity() {
                     dayReminder = day
 
                     TimePickerDialog(
-                        this@NewReminderActivity,
+                        thisContext,
                         0,
                         { _, hour, minute ->
                             this.set(Calendar.HOUR_OF_DAY, hour)
@@ -147,13 +166,13 @@ class NewReminderActivity : AppCompatActivity() {
     }
 
     private fun addPreAlarmField() {
-        val preAlertField = TextView(this)
+        val preAlertField = TextView(thisContext)
         preAlertField.setText(R.string.pre_alert_default_option)
         preAlertField.textSize = 18f
         rootPreAlarms.addView(preAlertField)
 
         preAlertField.setOnClickListener {
-            val intent = Intent(this, PreAlertOptionActivity::class.java)
+            val intent = Intent(thisContext, PreAlertOptionActivity::class.java)
             preAlarmFieldReminder = preAlertField
             startActivityForResult(intent, 1)
         }
@@ -163,16 +182,19 @@ class NewReminderActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
-                val option = data?.getStringExtra(PRE_ALARM_OPTION)
+            if (resultCode == AppCompatActivity.RESULT_OK) {
+                val option = data?.getStringExtra(ConstantsAlarm.PRE_ALARM_OPTION)
 
                 preAlarmFieldReminder.text = option
 
-                val idPreAlarm = getRandomInt()
-                val timeInMillis = computeTimeInMillis(option)
-                arrayPreAlerts.add(PreAlarm(timeInMillis, idPreAlarm, getValue(option), getTimeUnit(option)))
+                val idPreAlarm = RandomUtil.getRandomInt()
+                val timeInMillis = TimeUtil.computeTimeInMillis(option)
+                arrayPreAlerts.add(PreAlarm(timeInMillis, idPreAlarm,
+                    TimeUtil.getValue(option),
+                    TimeUtil.getTimeUnit(option)
+                ))
             }
-            if (resultCode == RESULT_CANCELED) {
+            if (resultCode == AppCompatActivity.RESULT_CANCELED) {
                 Log.d(TAG, "Pre alarm canceled")
             }
         }
