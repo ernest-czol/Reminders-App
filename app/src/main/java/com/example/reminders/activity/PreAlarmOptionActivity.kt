@@ -1,5 +1,4 @@
 package com.example.reminders.activity
-
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -8,14 +7,14 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.reminders.R
 import com.example.reminders.constants.ConstantsAlarm.PRE_ALARM_OPTION
 
-class PreAlertOptionActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
+class PreAlarmOptionActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private lateinit var radioGroup: RadioGroup
     private lateinit var radioButton: RadioButton
     private lateinit var textPreAlertOption: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_pre_alert_option)
+        setContentView(R.layout.activity_pre_alarm_option)
 
         radioGroup = findViewById(R.id.radioGroupId)
 

@@ -10,9 +10,28 @@
         <action
             android:id="@+id/action_homeFragment_to_addReminderFragment"
             app:destination="@id/addReminderFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_updateReminderFragment"
+            app:destination="@id/updateReminderFragment" />
     </fragment>
     <fragment
         android:id="@+id/addReminderFragment"
         android:name="com.example.reminders.ui.AddReminderFragment"
-        android:label="AddReminderFragment" />
+        android:label="AddReminderFragment" >
+        <action
+            android:id="@+id/action_addReminderFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/updateReminderFragment"
+        android:name="com.example.reminders.ui.UpdateReminderFragment"
+        android:label="UpdateReminderFragment" >
+        <argument
+            android:name="idReminder"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_updateReminderFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
 </navigation>

@@ -16,8 +16,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.reminders.R
-import com.example.reminders.activity.PreAlertOptionActivity
+import com.example.reminders.activity.PreAlarmOptionActivity
 import com.example.reminders.constants.ConstantsAlarm
 import com.example.reminders.constants.ConstantsDatabase
 import com.example.reminders.constants.ConstantsNotification
@@ -30,7 +31,7 @@ import com.example.reminders.util.TimeUtil
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.android.synthetic.main.activity_edit_reminder.*
+import kotlinx.android.synthetic.main.fragment_edit_reminder.*
 
 
 class AddReminderFragment : Fragment() {
@@ -85,7 +86,7 @@ class AddReminderFragment : Fragment() {
         thisContext = container?.context!!
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_reminder, container, false)
+        return inflater.inflate(R.layout.fragment_edit_reminder, container, false)
     }
 
     inner class AddButtonClick : View.OnClickListener {
@@ -112,7 +113,9 @@ class AddReminderFragment : Fragment() {
             reminder.preAlarms = arrayPreAlerts
             collectionReference.add(reminder)
 
-            fragmentManager?.popBackStack()
+            findNavController().navigate(
+                AddReminderFragmentDirections.actionAddReminderFragmentToHomeFragment()
+            )
         }
     }
 
@@ -172,7 +175,7 @@ class AddReminderFragment : Fragment() {
         rootPreAlarms.addView(preAlertField)
 
         preAlertField.setOnClickListener {
-            val intent = Intent(thisContext, PreAlertOptionActivity::class.java)
+            val intent = Intent(thisContext, PreAlarmOptionActivity::class.java)
             preAlarmFieldReminder = preAlertField
             startActivityForResult(intent, 1)
         }

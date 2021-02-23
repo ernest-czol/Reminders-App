@@ -1,7 +1,6 @@
 package com.example.reminders.ui
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +11,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reminders.R
-import com.example.reminders.activity.UpdateReminderActivity
 import com.example.reminders.adapter.ReminderAdapter
 import com.example.reminders.constants.ConstantsDatabase
 import com.example.reminders.constants.ConstantsReminder
@@ -112,9 +110,11 @@ class HomeFragment : Fragment() {
 //                val path = documentSnapshot?.reference?.path
                 val id = documentSnapshot?.id
 
-                val updateIntent = Intent(thisContext, UpdateReminderActivity::class.java)
-                updateIntent.putExtra(ConstantsReminder.ID_REMINDER, id)
-                startActivity(updateIntent)
+                id?.let{
+                    findNavController().navigate(
+                        HomeFragmentDirections.actionHomeFragmentToUpdateReminderFragment(id)
+                    )
+                }
             }
         })
     }
