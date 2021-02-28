@@ -27,6 +27,7 @@ import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_PRE_ALA
 import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_REPEATING_ALARM
 import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
+import com.example.reminders.data.RepeatingDetails
 import com.example.reminders.service.AlarmService
 import com.example.reminders.util.RandomUtil
 import com.example.reminders.util.TAG
@@ -51,6 +52,7 @@ class AddReminderFragment : Fragment() {
 
     lateinit var preAlarmFieldReminder: TextView
     val arrayPreAlerts = ArrayList<PreAlarm>()
+    val repeatingDetails = RepeatingDetails()
     lateinit var thisContext: Context
 
     lateinit var repeatingAlarmText: TextView
@@ -122,6 +124,10 @@ class AddReminderFragment : Fragment() {
             val reminder = Reminder(title, notes, idAlarm, yearReminder, monthReminder, dayReminder,
                 hourReminder, minuteReminder, timeInMillisReminder)
             reminder.preAlarms = arrayPreAlerts
+            if (repeatingDetails.isRepeating) {
+                repeatingDetails.originalDay = dayReminder
+                reminder.repeatingDetails = repeatingDetails
+            }
             collectionReference.add(reminder)
 
             findNavController().navigate(
@@ -212,13 +218,18 @@ class AddReminderFragment : Fragment() {
                 Log.d(TAG, "Pre alarm canceled")
             }
         } else if (requestCode == REQUEST_CODE_REPEATING_ALARM) {
-            val option = data?.getStringExtra(ConstantsAlarm.REPEATING_ALARM_OPTION)
+            if (resultCode == AppCompatActivity.RESULT_OK) {
+                val option = data?.getStringExtra(ConstantsAlarm.REPEATING_ALARM_OPTION)
 
-            repeatingAlarmText.text = option
+                repeatingAlarmText.text = option
 
-            Log.d(TAG, "$option")
+                Log.d(TAG, "$option")
 
-            if (option != getString(R.string.repeating_alarm_default_option)) {
+                if (option != getString(R.string.repeating_alarm_default_option)) {
+                    repeatingDetails.isRepeating = true
+                    repeatingDetails.interval = TimeUtil.getValue(option).toInt()
+                    repeatingDetails.intervalUnit = TimeUtil.getIntervalUnit(option)
+                }
             }
         }
     }

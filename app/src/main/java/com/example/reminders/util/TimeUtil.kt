@@ -1,6 +1,7 @@
 package com.example.reminders.util
 
 import com.example.reminders.constants.ConstantsTime
+import com.example.reminders.data.IntervalUnit
 import java.util.concurrent.TimeUnit
 
 object TimeUtil {
@@ -23,6 +24,19 @@ object TimeUtil {
             timeUnit?.contains(ConstantsTime.HOUR) == true -> TimeUnit.HOURS
             timeUnit?.contains(ConstantsTime.DAY) == true -> TimeUnit.DAYS
             else -> TimeUnit.MILLISECONDS
+        }
+    }
+
+    fun getIntervalUnit(option: String?): IntervalUnit {
+        val timeUnit = option?.split(' ')?.get(1)
+
+        return when {
+            timeUnit?.contains(ConstantsTime.HOUR) == true -> IntervalUnit.HOUR
+            timeUnit?.contains(ConstantsTime.DAY) == true -> IntervalUnit.DAY
+            timeUnit?.contains(ConstantsTime.WEEK) == true -> IntervalUnit.WEEK
+            timeUnit?.contains(ConstantsTime.MONTH) == true -> IntervalUnit.MONTH
+            timeUnit?.contains(ConstantsTime.YEAR) == true -> IntervalUnit.YEAR
+            else -> IntervalUnit.DAY
         }
     }
 }
