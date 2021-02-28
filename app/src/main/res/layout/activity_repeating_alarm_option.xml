@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.RepeatingAlarmOptionActivity">
+
+    <RadioGroup
+        android:id="@+id/radioGroupRepeatingAlarm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/radioButtonNoRepeat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/repeating_alarm_default_option" />
+
+        <RadioButton
+            android:id="@+id/radioButtonEveryDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1 day" />
+
+        <RadioButton
+            android:id="@+id/radioButtonEveryWeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1 week" />
+
+        <RadioButton
+            android:id="@+id/radioButtonEveryMonth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1 month" />
+
+        <RadioButton
+            android:id="@+id/radioButtonEveryYear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1 year" />
+
+        <RadioButton
+            android:id="@+id/radioButtonCustom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Custom" />
+
+    </RadioGroup>
+
+    <EditText
+        android:id="@+id/editTextNumberRepeatingAlarmValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="number"
+        android:text="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroupRepeatingAlarm" />
+
+    <Spinner
+        android:id="@+id/spinnerRepeatingAlarm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextNumberRepeatingAlarmValue" />
+
+    <Button
+        android:id="@+id/confirmRepeatingAlarmButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confirm"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -19,9 +19,12 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.reminders.R
 import com.example.reminders.activity.PreAlarmOptionActivity
+import com.example.reminders.activity.RepeatingAlarmOptionActivity
 import com.example.reminders.constants.ConstantsAlarm
 import com.example.reminders.constants.ConstantsDatabase
 import com.example.reminders.constants.ConstantsNotification
+import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_PRE_ALARM
+import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_REPEATING_ALARM
 import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
 import com.example.reminders.service.AlarmService
@@ -50,6 +53,8 @@ class AddReminderFragment : Fragment() {
     val arrayPreAlerts = ArrayList<PreAlarm>()
     lateinit var thisContext: Context
 
+    lateinit var repeatingAlarmText: TextView
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         alarmService = AlarmService(thisContext)
 
@@ -64,6 +69,7 @@ class AddReminderFragment : Fragment() {
             addButton = findViewById(R.id.save_button)
             setAlarmButton = findViewById(R.id.setTimeButton)
             preAlarmAddButton = findViewById(R.id.pre_alarm_add_button)
+            repeatingAlarmText = findViewById(R.id.repeatingAlarmText)
         }
 
         addButton.setOnClickListener(AddButtonClick())
@@ -74,6 +80,11 @@ class AddReminderFragment : Fragment() {
 
         preAlarmAddButton.setOnClickListener{
             addPreAlarmField()
+        }
+
+        repeatingAlarmText.setOnClickListener {
+            val intent = Intent(thisContext, RepeatingAlarmOptionActivity::class.java)
+            startActivityForResult(intent, REQUEST_CODE_REPEATING_ALARM)
         }
 
         //setRepetitive.setOnClickListener { setAlarm { alarmService.setRepetitiveAlarm(it) } }
@@ -177,14 +188,14 @@ class AddReminderFragment : Fragment() {
         preAlertField.setOnClickListener {
             val intent = Intent(thisContext, PreAlarmOptionActivity::class.java)
             preAlarmFieldReminder = preAlertField
-            startActivityForResult(intent, 1)
+            startActivityForResult(intent, REQUEST_CODE_PRE_ALARM)
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == 1) {
+        if (requestCode == REQUEST_CODE_PRE_ALARM) {
             if (resultCode == AppCompatActivity.RESULT_OK) {
                 val option = data?.getStringExtra(ConstantsAlarm.PRE_ALARM_OPTION)
 
@@ -199,6 +210,15 @@ class AddReminderFragment : Fragment() {
             }
             if (resultCode == AppCompatActivity.RESULT_CANCELED) {
                 Log.d(TAG, "Pre alarm canceled")
+            }
+        } else if (requestCode == REQUEST_CODE_REPEATING_ALARM) {
+            val option = data?.getStringExtra(ConstantsAlarm.REPEATING_ALARM_OPTION)
+
+            repeatingAlarmText.text = option
+
+            Log.d(TAG, "$option")
+
+            if (option != getString(R.string.repeating_alarm_default_option)) {
             }
         }
     }

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Reminders</string>
     <string name="pre_alert_default_option">No pre-alert</string>
+    <string name="repeating_alarm_default_option">Don`t repeat</string>
 
     <string name="home_label">Home</string>
 
@@ -9,6 +10,15 @@
         <item>hours</item>
         <item>days</item>
     </string-array>
+
+    <string-array name="repeatingAlarmOptionIntervals">
+        <item>hours</item>
+        <item>days</item>
+        <item>weeks</item>
+        <item>months</item>
+        <item>years</item>
+    </string-array>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_pre_alarm_option">PreAlarmOptionActivity</string>

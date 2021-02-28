@@ -8,5 +8,6 @@ object ConstantsAlarm {
     const val TIME_UNIT = "TIME_UNIT"
     const val TIME_UNIT_VALUE = "TIME_UNIT_VALUE"
     const val PRE_ALARM_OPTION = "PRE_ALARM_OPTION"
+    const val REPEATING_ALARM_OPTION = "REPEATING_ALARM_OPTION"
     const val NO_PRE_ALARM = "No pre alarm"
 }

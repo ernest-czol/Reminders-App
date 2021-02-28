@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.reminders">
 
@@ -11,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Reminders">
-        <activity android:name=".activity.PreAlarmOptionActivity"></activity>
+        <activity android:name=".activity.RepeatingAlarmOptionActivity"></activity>
+        <activity android:name=".activity.PreAlarmOptionActivity" />
         <activity
             android:name=".activity.MainActivity"
             android:launchMode="singleTop">
@@ -30,7 +32,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".receiver.NotificationReceiver"></receiver>
+        <receiver android:name=".receiver.NotificationReceiver" />
     </application>
 
 </manifest>
