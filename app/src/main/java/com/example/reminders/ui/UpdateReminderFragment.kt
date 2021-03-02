@@ -23,17 +23,15 @@ import com.example.reminders.R
 import com.example.reminders.activity.PreAlarmOptionActivity
 import com.example.reminders.constants.ConstantsAlarm
 import com.example.reminders.constants.ConstantsAlarm.PRE_ALARM_OPTION
-import com.example.reminders.constants.ConstantsDatabase
 import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
+import com.example.reminders.model.Repository
 import com.example.reminders.service.AlarmService
 import com.example.reminders.util.RandomUtil.getRandomInt
 import com.example.reminders.util.TimeUtil.computeTimeInMillis
 import com.example.reminders.util.TimeUtil.getTimeUnit
 import com.example.reminders.util.TimeUtil.getValue
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_edit_reminder.*
 import java.util.concurrent.TimeUnit
 
@@ -41,7 +39,6 @@ class UpdateReminderFragment : Fragment() {
     lateinit var editTextTitle: EditText
     lateinit var editTextNotes: EditText
     lateinit var idReminder: String
-    lateinit var docReference: DocumentReference
     lateinit var alarmService: AlarmService
 
     var dayReminder: Int = 0
@@ -63,7 +60,7 @@ class UpdateReminderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         alarmService = AlarmService(thisContext)
 
-        args.idReminder?.let{idReminder = it}
+        args.idReminder?.let { idReminder = it }
 
         val addButton: Button
         val setAlarmButton: Button
@@ -82,11 +79,11 @@ class UpdateReminderFragment : Fragment() {
 
         addButton.setOnClickListener(UpdateButtonClick())
 
-        setAlarmButton.setOnClickListener{
+        setAlarmButton.setOnClickListener {
             setAlarm()
         }
 
-        preAlertAddButton.setOnClickListener{
+        preAlertAddButton.setOnClickListener {
             addPreAlertField()
         }
     }
@@ -102,27 +99,24 @@ class UpdateReminderFragment : Fragment() {
     }
 
     private fun setValues() {
-        docReference = FirebaseFirestore.getInstance()
-            .collection(ConstantsDatabase.COLLECTION_REMINDERS)
-            .document(idReminder)
+        Repository.getReminderDocument(idReminder).get().addOnSuccessListener {
+            val reminder = it.toObject(Reminder::class.java)
+            reminder?.let {
+                editTextTitle.setText(reminder.title)
+                editTextNotes.setText(reminder.notes)
 
-        docReference.get().addOnSuccessListener { documentSnapshot ->
-            val reminder = documentSnapshot.toObject(Reminder::class.java)
+                yearReminder = reminder.year
+                monthReminder = reminder.month
+                dayReminder = reminder.day
+                hourReminder = reminder.hour
+                minuteReminder = reminder.minute
 
-            editTextTitle.setText(reminder!!.title)
-            editTextNotes.setText(reminder.notes)
+                timeInMillisReminder = reminder.timeInMillis
 
-            yearReminder = reminder.year
-            monthReminder = reminder.month
-            dayReminder = reminder.day
-            hourReminder = reminder.hour
-            minuteReminder = reminder.minute
+                idAlarm = reminder.idAlarm
 
-            timeInMillisReminder = reminder.timeInMillis
-
-            idAlarm = reminder.idAlarm
-
-            setValuesPreAlarms(reminder.preAlarms)
+                setValuesPreAlarms(reminder.preAlarms)
+            }
         }
     }
 
@@ -138,16 +132,37 @@ class UpdateReminderFragment : Fragment() {
             val notes = editTextNotes.text.toString()
 
             if (title.trim().isEmpty() || notes.trim().isEmpty()) {
-                Toast.makeText(v?.context, "Please insert a title and description", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    v?.context,
+                    "Please insert a title and description",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return
             }
 
-            alarmService.updateAlarmAndPreAlarms(idAlarm, timeInMillisReminder, title, notes, arrayPreAlerts)
+            alarmService.updateAlarmAndPreAlarms(
+                idAlarm,
+                timeInMillisReminder,
+                title,
+                notes,
+                arrayPreAlerts
+            )
 
-            val reminder = Reminder(title, notes, idAlarm, yearReminder, monthReminder, dayReminder, hourReminder, minuteReminder, timeInMillisReminder)
+            val reminder = Reminder(
+                idReminder,
+                title,
+                notes,
+                idAlarm,
+                yearReminder,
+                monthReminder,
+                dayReminder,
+                hourReminder,
+                minuteReminder,
+                timeInMillisReminder
+            )
             reminder.preAlarms = arrayPreAlerts
 
-            docReference.set(reminder)
+            Repository.updateReminder(reminder)
 
             findNavController().navigate(
                 UpdateReminderFragmentDirections.actionUpdateReminderFragmentToHomeFragment()
@@ -208,7 +223,12 @@ class UpdateReminderFragment : Fragment() {
         }
     }
 
-    private fun updatePreAlarmValues(idPreAlert: Int, timeInMillis: Long, value: Long, timeUnit: TimeUnit) {
+    private fun updatePreAlarmValues(
+        idPreAlert: Int,
+        timeInMillis: Long,
+        value: Long,
+        timeUnit: TimeUnit
+    ) {
         for (preAlarm in arrayPreAlerts)
             if (preAlarm.idPreAlarm == idPreAlert) {
                 preAlarm.timeInMillis = timeInMillisReminder - timeInMillis
@@ -218,7 +238,14 @@ class UpdateReminderFragment : Fragment() {
                 return
             }
 
-        arrayPreAlerts.add(PreAlarm(timeInMillisReminder - timeInMillis, idPreAlert, value, timeUnit))
+        arrayPreAlerts.add(
+            PreAlarm(
+                timeInMillisReminder - timeInMillis,
+                idPreAlert,
+                value,
+                timeUnit
+            )
+        )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -236,7 +263,12 @@ class UpdateReminderFragment : Fragment() {
                     idPreAlarm_r
                 val timeInMillis = computeTimeInMillis(option)
 
-                updatePreAlarmValues(idPreAlert, timeInMillis, getValue(option), getTimeUnit(option))
+                updatePreAlarmValues(
+                    idPreAlert,
+                    timeInMillis,
+                    getValue(option),
+                    getTimeUnit(option)
+                )
             }
             if (resultCode == RESULT_CANCELED) {
                 Log.d("NewRem", "pre alert canceled")

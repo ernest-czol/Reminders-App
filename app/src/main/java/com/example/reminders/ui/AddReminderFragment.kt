@@ -21,20 +21,18 @@ import com.example.reminders.R
 import com.example.reminders.activity.PreAlarmOptionActivity
 import com.example.reminders.activity.RepeatingAlarmOptionActivity
 import com.example.reminders.constants.ConstantsAlarm
-import com.example.reminders.constants.ConstantsDatabase
 import com.example.reminders.constants.ConstantsNotification
 import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_PRE_ALARM
 import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_REPEATING_ALARM
 import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
 import com.example.reminders.data.RepeatingDetails
+import com.example.reminders.model.Repository
 import com.example.reminders.service.AlarmService
 import com.example.reminders.util.RandomUtil
 import com.example.reminders.util.TAG
 import com.example.reminders.util.TimeUtil
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_edit_reminder.*
 
 
@@ -118,10 +116,8 @@ class AddReminderFragment : Fragment() {
 
             setPreAlarms(title)
 
-            val collectionReference: CollectionReference = FirebaseFirestore.getInstance().collection(
-                ConstantsDatabase.COLLECTION_REMINDERS
-            )
-            val reminder = Reminder(title, notes, idAlarm, yearReminder, monthReminder, dayReminder,
+
+            val reminder = Reminder("", title, notes, idAlarm, yearReminder, monthReminder, dayReminder,
                 hourReminder, minuteReminder, timeInMillisReminder)
             reminder.preAlarms = arrayPreAlerts
             if (repeatingDetails.isRepeating) {
@@ -129,7 +125,7 @@ class AddReminderFragment : Fragment() {
                 reminder.repeatingDetails = repeatingDetails
             }
 
-            collectionReference.add(reminder)
+            Repository.addReminder(reminder)
 
             findNavController().navigate(
                 AddReminderFragmentDirections.actionAddReminderFragmentToHomeFragment()

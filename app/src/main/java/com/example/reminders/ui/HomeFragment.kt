@@ -12,29 +12,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reminders.R
 import com.example.reminders.adapter.ReminderAdapter
-import com.example.reminders.constants.ConstantsDatabase
-import com.example.reminders.constants.ConstantsReminder
-import com.example.reminders.data.Reminder
+import com.example.reminders.model.Repository
 import com.example.reminders.service.AlarmService
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 
 class HomeFragment : Fragment() {
-    private lateinit var firebaseReference: FirebaseFirestore
-    private lateinit var collectionReminders: CollectionReference
     private lateinit var reminderAdapter: ReminderAdapter
 
     lateinit var recyclerView: RecyclerView
     lateinit var thisContext: Context
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        firebaseReference = FirebaseFirestore.getInstance()
-        collectionReminders = firebaseReference.collection(ConstantsDatabase.COLLECTION_REMINDERS)
-
         val floatingAddButton: FloatingActionButton
 
         view.apply {
@@ -70,7 +59,7 @@ class HomeFragment : Fragment() {
 
         buildRecyclerView(reminderAdapter)
 
-        adapterSwypeItem(reminderAdapter, recyclerView)
+        adapterSwipeItem(reminderAdapter, recyclerView)
 
         adapterSetOnItemClickListener(reminderAdapter)
     }
@@ -86,15 +75,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun buildOptions(): ReminderAdapter {
-        val query: Query =
-            collectionReminders.orderBy(ConstantsReminder.TITLE_FIELD, Query.Direction.ASCENDING)
-
-        val options: FirestoreRecyclerOptions<Reminder> =
-            FirestoreRecyclerOptions.Builder<Reminder>()
-                .setQuery(query, Reminder::class.java)
-                .build()
-
-        return ReminderAdapter(options)
+        return ReminderAdapter(Repository.getRemindersForAdapter())
     }
 
     private fun buildRecyclerView(reminderAdapter: ReminderAdapter) {
@@ -119,7 +100,7 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun adapterSwypeItem(reminderAdapter: ReminderAdapter, recyclerView: RecyclerView) {
+    private fun adapterSwipeItem(reminderAdapter: ReminderAdapter, recyclerView: RecyclerView) {
         // Swipe to delete
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             0,
