@@ -128,6 +128,7 @@ class AddReminderFragment : Fragment() {
                 repeatingDetails.originalDay = dayReminder
                 reminder.repeatingDetails = repeatingDetails
             }
+
             collectionReference.add(reminder)
 
             findNavController().navigate(

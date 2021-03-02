@@ -1,7 +1,7 @@
 package com.example.reminders.util
 
+import android.text.format.DateFormat
 import com.example.reminders.constants.ConstantsTime
-import com.example.reminders.data.IntervalUnit
 import java.util.concurrent.TimeUnit
 
 object TimeUtil {
@@ -39,4 +39,27 @@ object TimeUtil {
             else -> IntervalUnit.DAY
         }
     }
+
+    private fun convertDate(timeInMillis: Long): String =
+        DateFormat.format("dd/MM/yyyy hh:mm:ss", timeInMillis).toString()
+//
+//    fun computeNextHour(interval: Int, currentHour: Int): Int {
+//        return (currentHour + interval) % 24
+//    }
+//
+//    fun computeNextDay(interval: Int, currentDay: Int, currentMonth: Int, currentYear: Int): Int {
+//        if (interval + currentDay <= Months.values()[currentMonth].days)
+//            return currentDay + interval
+//        else if (cu)
+//    }
+//
+//    fun checkLeapYear(year: Int): Boolean {
+//        return if (year % 4 == 0) {
+//            if (year % 100 == 0) {
+//                year % 400 == 0
+//            } else
+//                true
+//        } else
+//            false
+//    }
 }

@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.example.reminders.constants.ConstantsAlarm.ACTION_SET_EXACT
 import com.example.reminders.constants.ConstantsAlarm.ACTION_SET_REPETITIVE
 import com.example.reminders.constants.ConstantsAlarm.EXACT_ALARM_TIME
@@ -12,7 +13,11 @@ import com.example.reminders.constants.ConstantsNotification.PRE_ALARM_TITLE_NOT
 import com.example.reminders.constants.ConstantsReminder.DESCRIPTION_REMINDER
 import com.example.reminders.constants.ConstantsReminder.TITLE_REMINDER
 import com.example.reminders.data.PreAlarm
+import com.example.reminders.data.Reminder
 import com.example.reminders.receiver.AlarmReceiver
+import com.example.reminders.util.IntervalUnit
+import com.example.reminders.util.TAG
+import java.util.concurrent.TimeUnit
 
 class AlarmService(private val context: Context) {
     private val alarmManager: AlarmManager? =
@@ -32,6 +37,44 @@ class AlarmService(private val context: Context) {
                 idAlarm
             )
         )
+    }
+
+    fun setRepeatingAlarm(reminder: Reminder) {
+        val intervalUnit = reminder.repeatingDetails.intervalUnit
+        val intervalValue = reminder.repeatingDetails.interval
+
+        when(intervalUnit) {
+            IntervalUnit.HOUR -> {
+               reminder.timeInMillis += TimeUnit.HOURS.toMillis(intervalValue.toLong())
+
+                Log.d(TAG, "din $intervalValue in $intervalValue $intervalUnit")
+
+//                reminder.hour = computeNextHour(intervalValue, reminder.hour)
+//                reminder.day = computeNextDay(intervalValue, reminder.hour, reminder.day, reminder.month, reminder.year)
+//                reminder.month = computeNextMonth(intervalValue, reminder.hour, reminder.day, reminder.month, reminder.year)
+//                reminder.year = computeNextYear(intervalValue, reminder.hour, reminder.day, reminder.month, reminder.year)
+            }
+            IntervalUnit.DAY -> {
+                reminder.timeInMillis += TimeUnit.DAYS.toMillis(intervalValue.toLong())
+
+                Log.d(TAG, "din $intervalValue in $intervalValue $intervalUnit")
+
+//                reminder.day = computeNextDay(intervalValue, reminder.day, reminder.month, reminder.year)
+//                reminder.month = computeNextMonth(intervalValue, reminder.day, reminder.month, reminder.year)
+//                reminder.year = computeNextYear(intervalValue, reminder.day, reminder.month, reminder.year)
+            }
+            IntervalUnit.WEEK -> {
+                Log.d(TAG, "din $intervalValue in $intervalValue $intervalUnit")
+            }
+            IntervalUnit.MONTH -> {
+                Log.d(TAG, "din $intervalValue in $intervalValue $intervalUnit")
+            }
+            IntervalUnit.YEAR -> {
+                Log.d(TAG, "din $intervalValue in $intervalValue $intervalUnit")
+            }
+        }
+
+        setExactAlarm(reminder.timeInMillis, reminder.idAlarm, reminder.title, reminder.notes)
     }
 
     fun setRepetitiveAlarm(timeInMillis: Long) {

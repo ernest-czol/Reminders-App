@@ -4,7 +4,6 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.text.format.DateFormat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.reminders.R
@@ -66,9 +65,6 @@ class AlarmReceiver : BroadcastReceiver() {
         }
         alarmService.setRepetitiveAlarm(cal.timeInMillis)
     }
-
-    private fun convertDate(timeInMillis: Long): String =
-        DateFormat.format("dd/MM/yyyy hh:mm:ss", timeInMillis).toString()
 
     private fun sendNotification(context: Context, textTitle: String?, textContent: String?, idAlarm: Int) {
         val snoozeIntent = createSnoozeIntent(context, textTitle, textContent, idAlarm)

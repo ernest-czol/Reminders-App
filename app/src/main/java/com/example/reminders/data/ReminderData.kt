@@ -1,5 +1,6 @@
 package com.example.reminders.data
 
+import com.example.reminders.util.IntervalUnit
 import java.util.concurrent.TimeUnit
 
 data class Reminder(
