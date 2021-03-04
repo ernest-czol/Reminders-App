@@ -15,6 +15,9 @@ class App : Application() {
         createNotificationChannelReminders()
     }
 
+    /**
+     * Create a notification channel for reminders
+     */
     private fun createNotificationChannelReminders() {
         val name = NOTIFICATION_CHANNEL_NAME
         val descriptionText = NOTIFICATION_CHANNEL_DESCRIPTION
@@ -22,6 +25,7 @@ class App : Application() {
         val channel = NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance).apply {
             description = descriptionText
         }
+
         // Register the channel with the system
         val notificationManager: NotificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

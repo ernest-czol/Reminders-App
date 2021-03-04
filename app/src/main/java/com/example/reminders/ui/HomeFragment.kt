@@ -6,22 +6,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reminders.R
 import com.example.reminders.adapter.ReminderAdapter
-import com.example.reminders.model.Repository
 import com.example.reminders.service.AlarmService
+import com.example.reminders.viewModel.ReminderViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.DocumentSnapshot
 
 class HomeFragment : Fragment() {
     private lateinit var reminderAdapter: ReminderAdapter
-
     lateinit var recyclerView: RecyclerView
     lateinit var thisContext: Context
+    private val viewModel: ReminderViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val floatingAddButton: FloatingActionButton
@@ -42,20 +43,12 @@ class HomeFragment : Fragment() {
     ): View? {
         thisContext = container?.context!!
 
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    inner class AddButtonClick : View.OnClickListener {
-        override fun onClick(v: View?) {
-           findNavController().navigate(
-               HomeFragmentDirections.actionHomeFragmentToAddReminderFragment()
-           )
-        }
-    }
-
     private fun setUpRecyclerView() {
-        reminderAdapter = buildOptions()
+        // set up the reminder adapter
+        reminderAdapter = ReminderAdapter(viewModel.getRemindersForAdapter())
 
         buildRecyclerView(reminderAdapter)
 
@@ -64,34 +57,36 @@ class HomeFragment : Fragment() {
         adapterSetOnItemClickListener(reminderAdapter)
     }
 
-    override fun onStart() {
-        super.onStart()
-        reminderAdapter.startListening()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        reminderAdapter.stopListening()
-    }
-
-    private fun buildOptions(): ReminderAdapter {
-        return ReminderAdapter(Repository.getRemindersForAdapter())
-    }
-
+    /**
+     * Build the recycler view
+     */
     private fun buildRecyclerView(reminderAdapter: ReminderAdapter) {
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(thisContext)
         recyclerView.adapter = reminderAdapter
     }
 
+
+    /**
+     * Navigate to AddReminderFragment
+     */
+    inner class AddButtonClick : View.OnClickListener {
+        override fun onClick(v: View?) {
+            findNavController().navigate(
+                HomeFragmentDirections.actionHomeFragmentToAddReminderFragment()
+            )
+        }
+    }
+
+    /**
+     * On item clicked navigate to UpdateReminderFragment
+     */
     private fun adapterSetOnItemClickListener(reminderAdapter: ReminderAdapter) {
         reminderAdapter.setOnItemClickListener(object : ReminderAdapter.OnItemClickListener {
             override fun onItemClick(documentSnapshot: DocumentSnapshot?, position: Int) {
-//                val reminder = documentSnapshot?.toObject(Reminder::class.java)
-//                val path = documentSnapshot?.reference?.path
                 val id = documentSnapshot?.id
 
-                id?.let{
+                id?.let {
                     findNavController().navigate(
                         HomeFragmentDirections.actionHomeFragmentToUpdateReminderFragment(id)
                     )
@@ -100,6 +95,9 @@ class HomeFragment : Fragment() {
         })
     }
 
+    /**
+     * Delete item when swiped
+     */
     private fun adapterSwipeItem(reminderAdapter: ReminderAdapter, recyclerView: RecyclerView) {
         // Swipe to delete
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
@@ -115,11 +113,21 @@ class HomeFragment : Fragment() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val (idAlarm, preAlarms) = reminderAdapter.deleteReminder(viewHolder.adapterPosition)
+                val reminder = reminderAdapter.deleteReminder(viewHolder.adapterPosition)
 
-                val alarmService = AlarmService(thisContext)
-                alarmService.deleteAlarmAndPreAlarms(idAlarm, preAlarms)
+                // delete the alarms for this reminder
+                viewModel.deleteAlarm(AlarmService(thisContext), reminder)
             }
         }).attachToRecyclerView(recyclerView)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        reminderAdapter.startListening()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        reminderAdapter.stopListening()
     }
 }

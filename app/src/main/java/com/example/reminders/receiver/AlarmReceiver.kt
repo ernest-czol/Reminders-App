@@ -63,7 +63,7 @@ class AlarmReceiver : BroadcastReceiver() {
             this.timeInMillis = timeInMillis + timeUnit.toMillis(timeValue)
             //Timber.d("Set alarm for next week same time - ${convertDate(this.timeInMillis)}")
         }
-        alarmService.setRepetitiveAlarm(cal.timeInMillis)
+        //alarmService.setRepetitiveAlarm(cal.timeInMillis)
     }
 
     private fun sendNotification(context: Context, textTitle: String?, textContent: String?, idAlarm: Int) {

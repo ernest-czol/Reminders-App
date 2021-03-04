@@ -6,17 +6,20 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reminders.R
-import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.firestore.DocumentSnapshot
 
 
+/**
+ * Reminder adapter class
+ */
 class ReminderAdapter(options: FirestoreRecyclerOptions<Reminder>) :
     FirestoreRecyclerAdapter<Reminder, ReminderAdapter.ReminderHolder>(options) {
     private var listener: OnItemClickListener? = null
 
+    // Loading data to a view holder ui
     override fun onBindViewHolder(holder: ReminderHolder, position: Int, model: Reminder) {
         holder.textViewTitle.text = model.title
         holder.textViewNotes.text = model.notes
@@ -27,6 +30,7 @@ class ReminderAdapter(options: FirestoreRecyclerOptions<Reminder>) :
         holder.textViewMinute.text = model.minute.toString()
     }
 
+    // Create a view holder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReminderHolder {
         val v: View = LayoutInflater.from(parent.context).inflate(
             R.layout.reminder_item,
@@ -35,11 +39,11 @@ class ReminderAdapter(options: FirestoreRecyclerOptions<Reminder>) :
         return ReminderHolder(v)
     }
 
-    fun deleteReminder(position: Int): Pair<Int?, ArrayList<PreAlarm>?> {
+    // Delete a reminder
+    fun deleteReminder(position: Int): Reminder? {
         snapshots.getSnapshot(position).reference.delete()
-        val obj = snapshots.getSnapshot(position).toObject(Reminder::class.java)
 
-        return Pair(obj?.idAlarm, obj?.preAlarms)
+        return snapshots.getSnapshot(position).toObject(Reminder::class.java)
     }
 
     inner class ReminderHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

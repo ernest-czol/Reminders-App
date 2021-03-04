@@ -17,6 +17,8 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.reminders.R
@@ -25,12 +27,13 @@ import com.example.reminders.constants.ConstantsAlarm
 import com.example.reminders.constants.ConstantsAlarm.PRE_ALARM_OPTION
 import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
-import com.example.reminders.model.Repository
 import com.example.reminders.service.AlarmService
 import com.example.reminders.util.RandomUtil.getRandomInt
+import com.example.reminders.util.TAG
 import com.example.reminders.util.TimeUtil.computeTimeInMillis
 import com.example.reminders.util.TimeUtil.getTimeUnit
 import com.example.reminders.util.TimeUtil.getValue
+import com.example.reminders.viewModel.ReminderViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.fragment_edit_reminder.*
 import java.util.concurrent.TimeUnit
@@ -38,53 +41,45 @@ import java.util.concurrent.TimeUnit
 class UpdateReminderFragment : Fragment() {
     lateinit var editTextTitle: EditText
     lateinit var editTextNotes: EditText
-    lateinit var idReminder: String
-    lateinit var alarmService: AlarmService
-
-    var dayReminder: Int = 0
-    var monthReminder: Int = 0
-    var yearReminder: Int = 0
-    var hourReminder: Int = 0
-    var minuteReminder: Int = 0
-    var timeInMillisReminder: Long = 0
-
-    var idAlarm: Int = 0
     lateinit var preAlertFieldReminder: TextView
-    val arrayPreAlerts = ArrayList<PreAlarm>()
+
     var idPreAlarm_r: Int = 0
 
     lateinit var thisContext: Context
-
     private val args: UpdateReminderFragmentArgs by navArgs()
+    private val viewModel: ReminderViewModel by activityViewModels()
+    private val reminder = Reminder()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        alarmService = AlarmService(thisContext)
+        // Get the reminder id from navigation arguments
+        args.idReminder?.let { reminder.id = it }
 
-        args.idReminder?.let { idReminder = it }
-
-        val addButton: Button
-        val setAlarmButton: Button
-        val preAlertAddButton: FloatingActionButton
+        val saveButton: Button
+        val setTimeForAlarmButton: Button
+        val preAlarmAddButton: FloatingActionButton
 
         view.apply {
             editTextTitle = findViewById(R.id.edit_title_reminder)
             editTextNotes = findViewById(R.id.edit_notes_reminder)
 
-            addButton = findViewById(R.id.save_button)
-            setAlarmButton = findViewById(R.id.setTimeButton)
-            preAlertAddButton = findViewById(R.id.pre_alarm_add_button)
+            saveButton = findViewById(R.id.save_button)
+            setTimeForAlarmButton = findViewById(R.id.setTimeButton)
+            preAlarmAddButton = findViewById(R.id.pre_alarm_add_button)
         }
 
-        setValues()
+        setValuesForReminder()
 
-        addButton.setOnClickListener(UpdateButtonClick())
+        // Save button click
+        saveButton.setOnClickListener(UpdateButtonClick())
 
-        setAlarmButton.setOnClickListener {
-            setAlarm()
+        // Set time for main alarms
+        setTimeForAlarmButton.setOnClickListener {
+            setTimeForAlarm()
         }
 
-        preAlertAddButton.setOnClickListener {
-            addPreAlertField()
+        // Add a new pre-alarm
+        preAlarmAddButton.setOnClickListener {
+            addPreAlarmField()
         }
     }
 
@@ -98,36 +93,92 @@ class UpdateReminderFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_edit_reminder, container, false)
     }
 
-    private fun setValues() {
-        Repository.getReminderDocument(idReminder).get().addOnSuccessListener {
-            val reminder = it.toObject(Reminder::class.java)
-            reminder?.let {
-                editTextTitle.setText(reminder.title)
-                editTextNotes.setText(reminder.notes)
+    /**
+     * Get current reminder values
+     */
+    private fun setValuesForReminder() {
+        viewModel.getReminder(reminder.id).observe(viewLifecycleOwner, Observer {
+            it?.let {
+                reminder.title = it.title
+                reminder.notes = it.notes
 
-                yearReminder = reminder.year
-                monthReminder = reminder.month
-                dayReminder = reminder.day
-                hourReminder = reminder.hour
-                minuteReminder = reminder.minute
+                reminder.year = it.year
+                reminder.month = it.month
+                reminder.day = it.day
+                reminder.hour = it.hour
+                reminder.minute = it.minute
 
-                timeInMillisReminder = reminder.timeInMillis
+                reminder.timeInMillis = it.timeInMillis
 
-                idAlarm = reminder.idAlarm
+                reminder.idAlarm = it.idAlarm
 
-                setValuesPreAlarms(reminder.preAlarms)
+                reminder.preAlarms.addAll(it.preAlarms)
+
+                updateUI()
             }
+        })
+    }
+
+    /**
+     * Update UI values
+     * More in the future
+     */
+    private fun updateUI() {
+        // Title and notes
+        editTextTitle.setText(reminder.title)
+        editTextNotes.setText(reminder.notes)
+
+        // Pre-alarm fields
+        for (preAlarm in reminder.preAlarms)
+            addPreAlarmField("${preAlarm.valueTimeUnit} ${preAlarm.timeUnit}", preAlarm.idPreAlarm)
+    }
+
+    /**
+     * Add a pre alarm field to the view
+     */
+    private fun addPreAlarmField(value: String = ConstantsAlarm.NO_PRE_ALARM, idPreAlarm: Int = 0) {
+        val preAlarmField = TextView(thisContext)
+        preAlarmField.text = value
+        preAlarmField.textSize = 18f
+        rootPreAlarms.addView(preAlarmField)
+
+        // I will change to an alert dialog in the future
+        preAlarmField.setOnClickListener {
+            preAlertFieldReminder = preAlarmField
+            idPreAlarm_r = idPreAlarm
+            startActivityForResult(Intent(thisContext, PreAlarmOptionActivity::class.java), 1)
         }
     }
 
-    private fun setValuesPreAlarms(preAlarms: ArrayList<PreAlarm>) {
-        arrayPreAlerts.addAll(preAlarms)
-        for (preAlarm in preAlarms)
-            addPreAlertField("${preAlarm.valueTimeUnit} ${preAlarm.timeUnit}", preAlarm.idPreAlarm)
-    }
-
+    /**
+     * Save button
+     */
     inner class UpdateButtonClick : View.OnClickListener {
         override fun onClick(v: View?) {
+            // Validate the fields
+            if (!validateFields(v))
+                return
+
+            // Update title and notes
+            reminder.title = editTextTitle.text.toString()
+            reminder.notes = editTextNotes.text.toString()
+
+            // Update alarms
+            viewModel.updateAlarms(AlarmService(thisContext), reminder)
+            // Persist reminder to db
+            viewModel.updateReminder(reminder)
+
+            // Navigate back to HomeFragment
+            findNavController().navigate(
+                UpdateReminderFragmentDirections.actionUpdateReminderFragmentToHomeFragment()
+            )
+        }
+
+        /**
+         * Check if the fields are empty
+         * More in the future
+         */
+        private fun validateFields(v: View?): Boolean {
             val title = editTextTitle.text.toString()
             val notes = editTextNotes.text.toString()
 
@@ -137,117 +188,45 @@ class UpdateReminderFragment : Fragment() {
                     "Please insert a title and description",
                     Toast.LENGTH_SHORT
                 ).show()
-                return
+                return false
             }
-
-            alarmService.updateAlarmAndPreAlarms(
-                idAlarm,
-                timeInMillisReminder,
-                title,
-                notes,
-                arrayPreAlerts
-            )
-
-            val reminder = Reminder(
-                idReminder,
-                title,
-                notes,
-                idAlarm,
-                yearReminder,
-                monthReminder,
-                dayReminder,
-                hourReminder,
-                minuteReminder,
-                timeInMillisReminder
-            )
-            reminder.preAlarms = arrayPreAlerts
-
-            Repository.updateReminder(reminder)
-
-            findNavController().navigate(
-                UpdateReminderFragmentDirections.actionUpdateReminderFragmentToHomeFragment()
-            )
+            return true
         }
     }
 
-    private fun setAlarm() {
-        Calendar.getInstance().apply {
-            this.set(Calendar.SECOND, 0)
-            this.set(Calendar.MILLISECOND, 0)
-            DatePickerDialog(
-                thisContext,
-                0,
-                { _, year, month, day ->
-                    this.set(Calendar.YEAR, year)
-                    this.set(Calendar.MONTH, month)
-                    this.set(Calendar.DAY_OF_MONTH, day)
-
-                    yearReminder = year
-                    monthReminder = month
-                    dayReminder = day
-
-                    TimePickerDialog(
-                        thisContext,
-                        0,
-                        { _, hour, minute ->
-                            this.set(Calendar.HOUR_OF_DAY, hour)
-                            this.set(Calendar.MINUTE, minute)
-
-                            hourReminder = hour
-                            minuteReminder = minute
-
-                            timeInMillisReminder = this.timeInMillis
-                        },
-                        this.get(Calendar.HOUR_OF_DAY),
-                        this.get(Calendar.MINUTE),
-                        false
-                    ).show()
-                },
-                this.get(Calendar.YEAR),
-                this.get(Calendar.MONTH),
-                this.get(Calendar.DAY_OF_MONTH)
-            ).show()
-        }
-    }
-
-    private fun addPreAlertField(value: String = ConstantsAlarm.NO_PRE_ALARM, idPreAlarm: Int = 0) {
-        val preAlertField = TextView(thisContext)
-        preAlertField.text = value
-        preAlertField.textSize = 18f
-        rootPreAlarms.addView(preAlertField)
-
-        preAlertField.setOnClickListener {
-            preAlertFieldReminder = preAlertField
-            idPreAlarm_r = idPreAlarm
-            startActivityForResult(Intent(thisContext, PreAlarmOptionActivity::class.java), 1)
-        }
-    }
-
+    /**
+     * Update pre-alarms values
+     */
     private fun updatePreAlarmValues(
-        idPreAlert: Int,
+        idPreAlarm: Int,
         timeInMillis: Long,
         value: Long,
         timeUnit: TimeUnit
     ) {
-        for (preAlarm in arrayPreAlerts)
-            if (preAlarm.idPreAlarm == idPreAlert) {
-                preAlarm.timeInMillis = timeInMillisReminder - timeInMillis
-                preAlarm.timeUnit = timeUnit
-                preAlarm.valueTimeUnit = value
+        // Update pre-alarm in the array if already exists
+        reminder.preAlarms.find { (it.idPreAlarm == idPreAlarm) }.apply {
+            this?.timeInMillis = reminder.timeInMillis - timeInMillis
+            this?.timeUnit = timeUnit
+            this?.valueTimeUnit = value
 
-                return
-            }
+            this?.let{return}
+        }
 
-        arrayPreAlerts.add(
+        // Add new pre-alarm
+        reminder.preAlarms.add(
             PreAlarm(
-                timeInMillisReminder - timeInMillis,
-                idPreAlert,
+                reminder.timeInMillis - timeInMillis,
+                idPreAlarm,
                 value,
                 timeUnit
             )
         )
     }
 
+    /**
+     * Used to get options for pre-alarm or repeating details
+     * I will use in the future an alert dialog for this
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -271,8 +250,51 @@ class UpdateReminderFragment : Fragment() {
                 )
             }
             if (resultCode == RESULT_CANCELED) {
-                Log.d("NewRem", "pre alert canceled")
+                Log.d(TAG, "pre alert canceled")
             }
+        }
+    }
+
+    /**
+     * Set date and time for an alarm
+     */
+    private fun setTimeForAlarm() {
+        Calendar.getInstance().apply {
+            this.set(Calendar.SECOND, 0)
+            this.set(Calendar.MILLISECOND, 0)
+            DatePickerDialog(
+                thisContext,
+                0,
+                { _, year, month, day ->
+                    this.set(Calendar.YEAR, year)
+                    this.set(Calendar.MONTH, month)
+                    this.set(Calendar.DAY_OF_MONTH, day)
+
+                    reminder.year = year
+                    reminder.month = month
+                    reminder.day = day
+
+                    TimePickerDialog(
+                        thisContext,
+                        0,
+                        { _, hour, minute ->
+                            this.set(Calendar.HOUR_OF_DAY, hour)
+                            this.set(Calendar.MINUTE, minute)
+
+                            reminder.hour = hour
+                            reminder.minute = minute
+
+                            reminder.timeInMillis = this.timeInMillis
+                        },
+                        this.get(Calendar.HOUR_OF_DAY),
+                        this.get(Calendar.MINUTE),
+                        false
+                    ).show()
+                },
+                this.get(Calendar.YEAR),
+                this.get(Calendar.MONTH),
+                this.get(Calendar.DAY_OF_MONTH)
+            ).show()
         }
     }
 }

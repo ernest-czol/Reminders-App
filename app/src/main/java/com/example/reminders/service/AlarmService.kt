@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.reminders.constants.ConstantsAlarm.ACTION_SET_EXACT
-import com.example.reminders.constants.ConstantsAlarm.ACTION_SET_REPETITIVE
 import com.example.reminders.constants.ConstantsAlarm.EXACT_ALARM_TIME
 import com.example.reminders.constants.ConstantsAlarm.ID_ALARM
 import com.example.reminders.constants.ConstantsNotification.PRE_ALARM_TITLE_NOTIFICATION
@@ -23,6 +22,9 @@ class AlarmService(private val context: Context) {
     private val alarmManager: AlarmManager? =
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
 
+    /**
+     * Set an alarm at exact time
+     */
     fun setExactAlarm(timeInMillis: Long, idAlarm: Int, title: String, description: String) {
         setAlarm(
             timeInMillis,
@@ -39,6 +41,9 @@ class AlarmService(private val context: Context) {
         )
     }
 
+    /**
+     * Set repeating alarm
+     */
     fun setRepeatingAlarm(reminder: Reminder) {
         val intervalUnit = reminder.repeatingDetails.intervalUnit
         val intervalValue = reminder.repeatingDetails.interval
@@ -77,19 +82,9 @@ class AlarmService(private val context: Context) {
         setExactAlarm(reminder.timeInMillis, reminder.idAlarm, reminder.title, reminder.notes)
     }
 
-    fun setRepetitiveAlarm(timeInMillis: Long) {
-        setAlarm(
-            timeInMillis,
-            getPendingIntent(
-                getIntent().apply {
-                    action = ACTION_SET_REPETITIVE
-                    putExtra(EXACT_ALARM_TIME, timeInMillis)
-                },
-                0
-            )
-        )
-    }
-
+    /**
+     * Set alarm
+     */
     private fun setAlarm(timeInMillis: Long, pendingIntent: PendingIntent) {
         alarmManager?.let {
             alarmManager.setExactAndAllowWhileIdle(
@@ -100,6 +95,9 @@ class AlarmService(private val context: Context) {
         }
     }
 
+    /**
+     * Delete an alarm
+     */
     fun deleteAlarm(idAlarm: Int) {
         val intent = getIntent().apply {
             action = ACTION_SET_EXACT
@@ -108,28 +106,30 @@ class AlarmService(private val context: Context) {
         alarmManager?.cancel(getPendingIntent(intent, idAlarm))
     }
 
+    /**
+     * Delete pre-alarms
+     */
     private fun deletePreAlarms(preAlarms: ArrayList<PreAlarm>) {
         val intent = getIntent().apply {
             action = ACTION_SET_EXACT
         }
-
-//        val collectionReference: CollectionReference = FirebaseFirestore.getInstance().collection("reminders")
-//
-//        collectionReference.document(idReminder).get().addOnCompleteListener{
-//            val doc = it.result
-//            val preAlarms = doc?.get("preAlarms")
-//        }
 
         for (preAlarm in preAlarms) {
             alarmManager?.cancel(getPendingIntent(intent, preAlarm.idPreAlarm))
         }
     }
 
+    /**
+     * Delete alarm and pre-alarms
+     */
     fun deleteAlarmAndPreAlarms(idAlarm: Int?, preAlarms: ArrayList<PreAlarm>?) {
         idAlarm?.let{deleteAlarm(it)}
         preAlarms?.let{deletePreAlarms(it)}
     }
 
+    /**
+     * Update an alarm
+     */
     fun updateAlarm(idAlarm: Int, timeInMillis: Long, title: String, description: String) {
         deleteAlarm(idAlarm)
 
@@ -137,6 +137,9 @@ class AlarmService(private val context: Context) {
             setExactAlarm(timeInMillis, idAlarm, title, description)
     }
 
+    /**
+     * Update pre-alarms
+     */
     fun updatePreAlarms(preAlarms: ArrayList<PreAlarm>, title: String) {
         deletePreAlarms(preAlarms)
 
@@ -146,6 +149,9 @@ class AlarmService(private val context: Context) {
         }
     }
 
+    /**
+     * Update alarm and pre-alarms
+     */
     fun updateAlarmAndPreAlarms(idAlarm: Int, timeInMillis: Long, title: String, description: String, preAlarms: ArrayList<PreAlarm>) {
         updateAlarm(idAlarm, timeInMillis, title, description)
         updatePreAlarms(preAlarms, title)

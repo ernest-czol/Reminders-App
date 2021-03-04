@@ -5,6 +5,9 @@ import com.example.reminders.constants.ConstantsTime
 import java.util.concurrent.TimeUnit
 
 object TimeUtil {
+    /**
+     * Convert a string to milliseconds
+     */
     fun computeTimeInMillis(option: String?): Long {
         val value = getValue(option)
 
@@ -12,10 +15,16 @@ object TimeUtil {
         return timeUnit.toMillis(value)
     }
 
+    /**
+     * Get the first element of the string and convert it to Long (Exp: "12 hours" => 12)
+     */
     fun getValue(option: String?): Long {
         return option?.split(' ')?.get(0)?.toLong() ?: 0
     }
 
+    /**
+     * Get the second element of the string and convert it to a time unit (Exp: "12 hours" => TimeUnit.HOURS)
+     */
     fun getTimeUnit(option: String?): TimeUnit {
         val timeUnit = option?.split(' ')?.get(1)
 
@@ -27,6 +36,9 @@ object TimeUtil {
         }
     }
 
+    /**
+     * Get the second element of the string and convert it to an interval unit (Exp: "15 weeks" => IntervalUnit.WEEK)
+     */
     fun getIntervalUnit(option: String?): IntervalUnit {
         val timeUnit = option?.split(' ')?.get(1)
 
