@@ -13,6 +13,10 @@ import kotlinx.coroutines.flow.flow
 
 object Repository {
 
+    /**
+     * Get recycler options for the adapter
+     * Since firestore automatically updates any changes, there is no need for a flow
+     */
     fun getRemindersForAdapter(): FirestoreRecyclerOptions<Reminder> {
         val collectionReminders =
             FirebaseFirestore.getInstance().collection(ConstantsDatabase.COLLECTION_REMINDERS)
@@ -25,6 +29,10 @@ object Repository {
             .build()
     }
 
+    /**
+     * Get a reminder
+     * I should improve this implementation
+     */
     suspend fun getReminder(idReminder: String) = flow<Reminder?> {
         val docRef = getReminderDocument(idReminder)
 
@@ -41,25 +49,39 @@ object Repository {
     }
 
 
+    /**
+     * Add a reminder
+     */
     fun addReminder(reminder: Reminder) {
         val collectionReference: CollectionReference =
             FirebaseFirestore.getInstance().collection(ConstantsDatabase.COLLECTION_REMINDERS)
 
         collectionReference.add(reminder).addOnSuccessListener {
             reminder.id = it.id
+            // TODO update only id
+            collectionReference.document(reminder.id).set(reminder)
         }
     }
 
+    /**
+     * Get a document of a reminder
+     */
     fun getReminderDocument(idReminder: String): DocumentReference {
         return FirebaseFirestore.getInstance()
             .collection(ConstantsDatabase.COLLECTION_REMINDERS)
             .document(idReminder)
     }
 
+    /**
+     * Update a reminder
+     */
     fun updateReminder(reminder: Reminder) {
         getReminderDocument(reminder.id).set(reminder)
     }
 
+    /**
+     * Delete a reminder
+     */
     fun deleteReminder(idReminder: String){
         getReminderDocument(idReminder).delete()
     }

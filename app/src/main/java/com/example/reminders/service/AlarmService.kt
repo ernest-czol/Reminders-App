@@ -6,11 +6,12 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.reminders.constants.ConstantsAlarm.ACTION_SET_EXACT
-import com.example.reminders.constants.ConstantsAlarm.EXACT_ALARM_TIME
-import com.example.reminders.constants.ConstantsAlarm.ID_ALARM
+import com.example.reminders.constants.ConstantsAlarm.ACTION_SET_MAIN_ALARM
+import com.example.reminders.constants.ConstantsAlarm.ACTION_SIMPLE_ALARM
+import com.example.reminders.constants.ConstantsAlarm.DESCRIPTION_ALARM
+import com.example.reminders.constants.ConstantsAlarm.TITLE_ALARM
 import com.example.reminders.constants.ConstantsNotification.PRE_ALARM_TITLE_NOTIFICATION
-import com.example.reminders.constants.ConstantsReminder.DESCRIPTION_REMINDER
-import com.example.reminders.constants.ConstantsReminder.TITLE_REMINDER
+import com.example.reminders.constants.ConstantsReminder.ID_REMINDER
 import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
 import com.example.reminders.receiver.AlarmReceiver
@@ -23,18 +24,32 @@ class AlarmService(private val context: Context) {
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
 
     /**
-     * Set an alarm at exact time
+     * Set main alarm for a reminder
      */
-    fun setExactAlarm(timeInMillis: Long, idAlarm: Int, title: String, description: String) {
+    fun setMainAlarm(reminder: Reminder) {
+        setAlarm(
+            reminder.timeInMillis,
+            getPendingIntent(
+                getIntent().apply {
+                    action = ACTION_SET_MAIN_ALARM
+                    putExtra(ID_REMINDER, reminder.id)
+                },
+                reminder.idAlarm
+            )
+        )
+    }
+
+    /**
+     * Set a simple alarm
+     */
+    fun setSimpleAlarm(timeInMillis: Long, idAlarm: Int, title: String, description: String) {
         setAlarm(
             timeInMillis,
             getPendingIntent(
                 getIntent().apply {
-                    action = ACTION_SET_EXACT
-                    putExtra(EXACT_ALARM_TIME, timeInMillis)
-                    putExtra(TITLE_REMINDER, title)
-                    putExtra(DESCRIPTION_REMINDER, description)
-                    putExtra(ID_ALARM, idAlarm)
+                    action = ACTION_SIMPLE_ALARM
+                    putExtra(TITLE_ALARM, title)
+                    putExtra(DESCRIPTION_ALARM, description)
                 },
                 idAlarm
             )
@@ -42,7 +57,31 @@ class AlarmService(private val context: Context) {
     }
 
     /**
-     * Set repeating alarm
+     * Set alarm
+     */
+    private fun setAlarm(timeInMillis: Long, pendingIntent: PendingIntent) {
+        alarmManager?.let {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                timeInMillis,
+                pendingIntent
+            )
+        }
+    }
+
+    private fun getIntent() = Intent(context, AlarmReceiver::class.java)
+
+    private fun getPendingIntent(intent: Intent, idAlarm: Int): PendingIntent {
+        return PendingIntent.getBroadcast(
+            context,
+            idAlarm,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
+
+    /**
+     * Set repeating alarm TODO
      */
     fun setRepeatingAlarm(reminder: Reminder) {
         val intervalUnit = reminder.repeatingDetails.intervalUnit
@@ -50,7 +89,7 @@ class AlarmService(private val context: Context) {
 
         when(intervalUnit) {
             IntervalUnit.HOUR -> {
-               reminder.timeInMillis += TimeUnit.HOURS.toMillis(intervalValue.toLong())
+                reminder.timeInMillis += TimeUnit.HOURS.toMillis(intervalValue.toLong())
 
                 Log.d(TAG, "din $intervalValue in $intervalValue $intervalUnit")
 
@@ -79,20 +118,7 @@ class AlarmService(private val context: Context) {
             }
         }
 
-        setExactAlarm(reminder.timeInMillis, reminder.idAlarm, reminder.title, reminder.notes)
-    }
-
-    /**
-     * Set alarm
-     */
-    private fun setAlarm(timeInMillis: Long, pendingIntent: PendingIntent) {
-        alarmManager?.let {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                timeInMillis,
-                pendingIntent
-            )
-        }
+        setMainAlarm(reminder)
     }
 
     /**
@@ -130,41 +156,30 @@ class AlarmService(private val context: Context) {
     /**
      * Update an alarm
      */
-    fun updateAlarm(idAlarm: Int, timeInMillis: Long, title: String, description: String) {
-        deleteAlarm(idAlarm)
+    fun updateAlarm(reminder: Reminder) {
+        deleteAlarm(reminder.idAlarm)
 
-        if (timeInMillis > System.currentTimeMillis())
-            setExactAlarm(timeInMillis, idAlarm, title, description)
+        if (reminder.timeInMillis > System.currentTimeMillis())
+            setMainAlarm(reminder)
     }
 
     /**
      * Update pre-alarms
      */
-    fun updatePreAlarms(preAlarms: ArrayList<PreAlarm>, title: String) {
-        deletePreAlarms(preAlarms)
+    fun updatePreAlarms(reminder: Reminder) {
+        deletePreAlarms(reminder.preAlarms)
 
-        for (alarm in preAlarms) {
-            if (alarm.timeInMillis > System.currentTimeMillis())
-                setExactAlarm(alarm.timeInMillis, alarm.idPreAlarm, PRE_ALARM_TITLE_NOTIFICATION, title)
+        for (preAlarm in reminder.preAlarms) {
+            if (preAlarm.timeInMillis > System.currentTimeMillis())
+                setSimpleAlarm(preAlarm.timeInMillis, preAlarm.idPreAlarm, PRE_ALARM_TITLE_NOTIFICATION, reminder.title)
         }
     }
 
     /**
      * Update alarm and pre-alarms
      */
-    fun updateAlarmAndPreAlarms(idAlarm: Int, timeInMillis: Long, title: String, description: String, preAlarms: ArrayList<PreAlarm>) {
-        updateAlarm(idAlarm, timeInMillis, title, description)
-        updatePreAlarms(preAlarms, title)
-    }
-
-    private fun getIntent() = Intent(context, AlarmReceiver::class.java)
-
-    private fun getPendingIntent(intent: Intent, idAlarm: Int): PendingIntent {
-        return PendingIntent.getBroadcast(
-            context,
-            idAlarm,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+    fun updateAlarmAndPreAlarms(reminder: Reminder) {
+        updateAlarm(reminder)
+        updatePreAlarms(reminder)
     }
 }

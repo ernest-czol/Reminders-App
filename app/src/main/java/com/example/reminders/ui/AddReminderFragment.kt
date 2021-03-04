@@ -193,7 +193,7 @@ class AddReminderFragment : Fragment() {
 
                     if (option != getString(R.string.repeating_alarm_default_option)) {
                         reminder.repeatingDetails.isRepeating = true
-                        reminder.repeatingDetails.interval = TimeUtil.getValue(option).toInt()
+                        reminder.repeatingDetails.interval = TimeUtil.getValue(option)
                         reminder.repeatingDetails.intervalUnit = TimeUtil.getIntervalUnit(option)
                     }
                 }

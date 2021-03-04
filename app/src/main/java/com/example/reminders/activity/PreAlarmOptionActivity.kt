@@ -7,6 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.reminders.R
 import com.example.reminders.constants.ConstantsAlarm.PRE_ALARM_OPTION
 
+/**
+ * I will change this to an alert dialog in the future
+ */
 class PreAlarmOptionActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private lateinit var radioGroup: RadioGroup
     private lateinit var radioButton: RadioButton

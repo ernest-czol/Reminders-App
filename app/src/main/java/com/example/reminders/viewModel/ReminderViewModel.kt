@@ -65,41 +65,53 @@ class ReminderViewModel : ViewModel() {
      * Delete the alarms for this reminder
      */
     fun deleteAlarm(alarmService: AlarmService, reminder: Reminder?) {
-        alarmService.deleteAlarmAndPreAlarms(reminder?.idAlarm, reminder?.preAlarms)
-    }
-
-    fun setExactAlarm(alarmService: AlarmService, reminder: Reminder) {
-        alarmService.setExactAlarm(
-            reminder.timeInMillis,
-            reminder.idAlarm,
-            reminder.title,
-            reminder.notes
-        )
-    }
-
-    fun setPreAlarms(alarmService: AlarmService, reminder: Reminder) {
-        for (preAlarm in reminder.preAlarms) {
-            preAlarm.timeInMillis = reminder.timeInMillis - preAlarm.timeInMillis
-
-            alarmService.setExactAlarm(
-                preAlarm.timeInMillis, preAlarm.idPreAlarm,
-                ConstantsNotification.PRE_ALARM_TITLE_NOTIFICATION, reminder.title
-            )
+        viewModelScope.launch(Dispatchers.IO) {
+            alarmService.deleteAlarmAndPreAlarms(reminder?.idAlarm, reminder?.preAlarms)
         }
     }
 
-    fun setAlarms(alarmService: AlarmService, reminder: Reminder) {
-        setExactAlarm(alarmService, reminder)
-        setPreAlarms(alarmService, reminder)
+    /**
+     * Set exact alarm
+     */
+    fun setExactAlarm(alarmService: AlarmService, reminder: Reminder) {
+        viewModelScope.launch(Dispatchers.IO) {
+            alarmService.setMainAlarm(reminder)
+        }
     }
 
+    /**
+     * Set pre-alarms
+     */
+    fun setPreAlarms(alarmService: AlarmService, reminder: Reminder) {
+        viewModelScope.launch(Dispatchers.IO) {
+            for (preAlarm in reminder.preAlarms) {
+                preAlarm.timeInMillis = reminder.timeInMillis - preAlarm.timeInMillis
+
+                alarmService.setSimpleAlarm(
+                    preAlarm.timeInMillis, preAlarm.idPreAlarm,
+                    ConstantsNotification.PRE_ALARM_TITLE_NOTIFICATION, reminder.title
+                )
+            }
+        }
+    }
+
+    /**
+     * Set alarms for a reminder
+     */
+    fun setAlarms(alarmService: AlarmService, reminder: Reminder) {
+        viewModelScope.launch(Dispatchers.IO) {
+            setExactAlarm(alarmService, reminder)
+            setPreAlarms(alarmService, reminder)
+        }
+
+    }
+
+    /**
+     * Update alarms for a reminder
+     */
     fun updateAlarms(alarmService: AlarmService, reminder: Reminder) {
-        alarmService.updateAlarmAndPreAlarms(
-            reminder.idAlarm,
-            reminder.timeInMillis,
-            reminder.title,
-            reminder.notes,
-            reminder.preAlarms
-        )
+        viewModelScope.launch(Dispatchers.IO) {
+            alarmService.updateAlarmAndPreAlarms(reminder)
+        }
     }
 }

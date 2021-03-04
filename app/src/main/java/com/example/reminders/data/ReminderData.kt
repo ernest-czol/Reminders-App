@@ -32,6 +32,6 @@ data class PreAlarm(
 data class RepeatingDetails(
     var isRepeating: Boolean = false,
     var originalDay: Int = 0,
-    var interval: Int = 0,
+    var interval: Long = 0,
     var intervalUnit: IntervalUnit = IntervalUnit.DAY,
 )
