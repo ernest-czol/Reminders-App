@@ -4,7 +4,6 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.reminders.R
@@ -25,7 +24,6 @@ import com.example.reminders.model.Repository
 import com.example.reminders.service.AlarmService
 import com.example.reminders.util.IntervalUnit
 import com.example.reminders.util.RandomUtil.getRandomInt
-import com.example.reminders.util.TAG
 import io.karn.notify.internal.utils.Action
 import java.util.*
 
@@ -41,7 +39,6 @@ class AlarmReceiver : BroadcastReceiver() {
             ACTION_SET_MAIN_ALARM -> {
                 // Get idReminder from intent
                 val idReminder = intent.getStringExtra(ID_REMINDER)
-                Log.d(TAG, "$idReminder")
 
                 // Get the reminder
                 idReminder?.let {

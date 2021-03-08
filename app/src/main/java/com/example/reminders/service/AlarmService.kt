@@ -5,7 +5,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.example.reminders.constants.ConstantsAlarm.ACTION_SET_EXACT
 import com.example.reminders.constants.ConstantsAlarm.ACTION_SET_MAIN_ALARM
 import com.example.reminders.constants.ConstantsAlarm.ACTION_SIMPLE_ALARM
 import com.example.reminders.constants.ConstantsAlarm.DESCRIPTION_ALARM
@@ -126,7 +125,7 @@ class AlarmService(private val context: Context) {
      */
     fun deleteAlarm(idAlarm: Int) {
         val intent = getIntent().apply {
-            action = ACTION_SET_EXACT
+            action = ACTION_SET_MAIN_ALARM
         }
 
         alarmManager?.cancel(getPendingIntent(intent, idAlarm))
@@ -137,7 +136,7 @@ class AlarmService(private val context: Context) {
      */
     private fun deletePreAlarms(preAlarms: ArrayList<PreAlarm>) {
         val intent = getIntent().apply {
-            action = ACTION_SET_EXACT
+            action = ACTION_SIMPLE_ALARM
         }
 
         for (preAlarm in preAlarms) {

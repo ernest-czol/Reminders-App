@@ -1,7 +1,6 @@
 package com.example.reminders.constants
 
 object ConstantsAlarm {
-    const val EXACT_ALARM_TIME = "EXACT_ALARM_TIME"
     const val ACTION_SET_EXACT = "ACTION_SET_EXACT"
     const val ACTION_SET_REPETITIVE = "ACTION_SET_REPETITIVE"
     const val ID_ALARM = "ID_ALARM"

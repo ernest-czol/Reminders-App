@@ -112,6 +112,7 @@ class UpdateReminderFragment : Fragment() {
 
                 reminder.idAlarm = it.idAlarm
 
+                reminder.preAlarms.clear()
                 reminder.preAlarms.addAll(it.preAlarms)
 
                 updateUI()
@@ -128,9 +129,13 @@ class UpdateReminderFragment : Fragment() {
         editTextTitle.setText(reminder.title)
         editTextNotes.setText(reminder.notes)
 
-        // Pre-alarm fields
+        // Clear the initial pre-alarm fields
+        rootPreAlarms.removeViews(1, rootPreAlarms.childCount - 1)
+
+        // Initialise pre-alarm fields
         for (preAlarm in reminder.preAlarms)
             addPreAlarmField("${preAlarm.valueTimeUnit} ${preAlarm.timeUnit}", preAlarm.idPreAlarm)
+
     }
 
     /**

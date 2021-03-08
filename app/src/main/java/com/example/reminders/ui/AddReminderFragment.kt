@@ -26,7 +26,6 @@ import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_PRE_ALA
 import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_REPEATING_ALARM
 import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
-import com.example.reminders.service.AlarmService
 import com.example.reminders.util.RandomUtil
 import com.example.reminders.util.TAG
 import com.example.reminders.util.TimeUtil
@@ -107,11 +106,8 @@ class AddReminderFragment : Fragment() {
             // Save the original day (field day might change if day is last of month)
             reminder.repeatingDetails.originalDay = reminder.day
 
-            // Set the alarms for this reminder
-            reminderViewModel.setAlarms(AlarmService(thisContext), reminder)
-
             // Persist the reminder to db
-            reminderViewModel.addReminder(reminder)
+            reminderViewModel.addReminder(reminder, thisContext)
 
             // Navigate to HomeFragment
             findNavController().navigate(

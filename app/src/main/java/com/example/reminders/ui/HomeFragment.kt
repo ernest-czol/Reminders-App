@@ -7,14 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reminders.R
 import com.example.reminders.adapter.ReminderAdapter
+import com.example.reminders.data.Reminder
 import com.example.reminders.service.AlarmService
+import com.example.reminders.util.EmptySnapshotArray
 import com.example.reminders.viewModel.ReminderViewModel
+import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.DocumentSnapshot
 
@@ -23,6 +27,9 @@ class HomeFragment : Fragment() {
     lateinit var recyclerView: RecyclerView
     lateinit var thisContext: Context
     private val viewModel: ReminderViewModel by activityViewModels()
+    private val options: FirestoreRecyclerOptions<Reminder> by lazy {
+        FirestoreRecyclerOptions.Builder<Reminder>().setSnapshotArray(EmptySnapshotArray()).build()
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val floatingAddButton: FloatingActionButton
@@ -48,7 +55,11 @@ class HomeFragment : Fragment() {
 
     private fun setUpRecyclerView() {
         // set up the reminder adapter
-        reminderAdapter = ReminderAdapter(viewModel.getRemindersForAdapter())
+        reminderAdapter = ReminderAdapter(options)
+
+        viewModel.getRemindersForAdapter().observe(viewLifecycleOwner, Observer {
+            reminderAdapter.updateOptions(it)
+        })
 
         buildRecyclerView(reminderAdapter)
 

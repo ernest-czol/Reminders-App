@@ -8,7 +8,8 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 
 object Repository {
@@ -17,35 +18,34 @@ object Repository {
      * Get recycler options for the adapter
      * Since firestore automatically updates any changes, there is no need for a flow
      */
-    fun getRemindersForAdapter(): FirestoreRecyclerOptions<Reminder> {
+    fun getRemindersForAdapter() = flow {
         val collectionReminders =
             FirebaseFirestore.getInstance().collection(ConstantsDatabase.COLLECTION_REMINDERS)
 
         val query: Query =
             collectionReminders.orderBy(ConstantsReminder.TITLE_FIELD, Query.Direction.ASCENDING)
 
-        return FirestoreRecyclerOptions.Builder<Reminder>()
+        val options = FirestoreRecyclerOptions.Builder<Reminder>()
             .setQuery(query, Reminder::class.java)
             .build()
+
+        emit(options)
     }
 
     /**
      * Get a reminder
      * I should improve this implementation
      */
-    suspend fun getReminder(idReminder: String) = flow<Reminder?> {
+    fun getReminder(idReminder: String) = callbackFlow {
         val docRef = getReminderDocument(idReminder)
+        var reminder: Reminder?
 
-        var reminder: Reminder? = Reminder()
-
-        docRef.get().addOnSuccessListener{
+        docRef.get().addOnSuccessListener {
             reminder = it.toObject(Reminder::class.java)
+            offer(reminder)
         }
 
-        // should find a solution for this
-        delay(500)
-
-        emit(reminder)
+        awaitClose()
     }
 
 
@@ -56,11 +56,7 @@ object Repository {
         val collectionReference: CollectionReference =
             FirebaseFirestore.getInstance().collection(ConstantsDatabase.COLLECTION_REMINDERS)
 
-        collectionReference.add(reminder).addOnSuccessListener {
-            reminder.id = it.id
-            // TODO update only id
-            collectionReference.document(reminder.id).set(reminder)
-        }
+        collectionReference.document(reminder.id).set(reminder)
     }
 
     /**
@@ -82,7 +78,7 @@ object Repository {
     /**
      * Delete a reminder
      */
-    fun deleteReminder(idReminder: String){
+    fun deleteReminder(idReminder: String) {
         getReminderDocument(idReminder).delete()
     }
 
