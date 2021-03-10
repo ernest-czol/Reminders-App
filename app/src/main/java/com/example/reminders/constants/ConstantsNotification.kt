@@ -8,6 +8,6 @@ object ConstantsNotification {
 
     const val PRE_ALARM_TITLE_NOTIFICATION = "Pre Alarm"
 
-    const val NOTIFICATION_SNOOZE = "NOTIFICATION_SNOOZE"
-    const val NOTIFICATION_DONE = "NOTIFICATION_DONE"
+    const val NOTIFICATION_SNOOZE = "Snooze"
+    const val NOTIFICATION_DONE = "Done"
 }

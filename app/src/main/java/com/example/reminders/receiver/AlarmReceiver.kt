@@ -22,10 +22,8 @@ import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_SNOOZE
 import com.example.reminders.data.Reminder
 import com.example.reminders.model.Repository
 import com.example.reminders.service.AlarmService
-import com.example.reminders.util.IntervalUnit
 import com.example.reminders.util.RandomUtil.getRandomInt
 import io.karn.notify.internal.utils.Action
-import java.util.*
 
 
 /**
@@ -56,8 +54,7 @@ class AlarmReceiver : BroadcastReceiver() {
                             if (reminder.repeatingDetails.isRepeating)
                                 setRepetitiveAlarm(
                                     AlarmService(context),
-                                    reminder.repeatingDetails.intervalUnit,
-                                    reminder.repeatingDetails.interval
+                                    reminder
                                 )
                         }
                     }
@@ -76,13 +73,11 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 }
 
-// TODO
-private fun setRepetitiveAlarm(alarmService: AlarmService, timeUnit: IntervalUnit, timeValue: Long) {
-    val cal = Calendar.getInstance().apply {
-        // this.timeInMillis = timeInMillis + timeUnit.toMillis(timeValue)
-        //Timber.d("Set alarm for next week same time - ${convertDate(this.timeInMillis)}")
-    }
-    //alarmService.setRepetitiveAlarm(cal.timeInMillis)
+/**
+ * Set a repetitive alarm
+ */
+private fun setRepetitiveAlarm(alarmService: AlarmService, reminder: Reminder) {
+    alarmService.setRepeatingAlarm(reminder)
 }
 
 /**

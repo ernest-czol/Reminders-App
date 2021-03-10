@@ -52,23 +52,49 @@
 
     </RadioGroup>
 
-    <EditText
-        android:id="@+id/editTextNumberRepeatingAlarmValue"
+    <LinearLayout
+        android:id="@+id/verticalLinearLayout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="number"
-        android:text="1"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/confirmRepeatingAlarmButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/radioGroupRepeatingAlarm" />
+        app:layout_constraintTop_toBottomOf="@+id/radioGroupRepeatingAlarm">
 
-    <Spinner
-        android:id="@+id/spinnerRepeatingAlarm"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextNumberRepeatingAlarmValue" />
+        <LinearLayout
+            android:id="@+id/horizontalLinearLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="parent">
+
+            <EditText
+                android:id="@+id/editTextNumberRepeatingAlarmValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="number"
+                android:text="1" />
+
+            <Spinner
+                android:id="@+id/spinnerRepeatingAlarm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <ListView
+                android:id="@+id/week_list_view"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:visibility="invisible" />
+        </ScrollView>
+    </LinearLayout>
 
     <Button
         android:id="@+id/confirmRepeatingAlarmButton"

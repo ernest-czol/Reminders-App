@@ -19,13 +19,16 @@ class PreAlarmOptionActivity : AppCompatActivity(), AdapterView.OnItemSelectedLi
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pre_alarm_option)
 
+        // radio group
         radioGroup = findViewById(R.id.radioGroupId)
 
+        // Confirm button
         val confirmButton = findViewById<Button>(R.id.confirmPreAlertButton)
         confirmButton.setOnClickListener{
             checkButton()
         }
 
+        // Spinner for intervals of time (minute, hour, day)
         val spinner = findViewById<Spinner>(R.id.spinnerPreAlert)
         val adapter : ArrayAdapter<CharSequence> = ArrayAdapter.createFromResource(this,
             R.array.alertOptionsIntervals,
@@ -42,6 +45,8 @@ class PreAlarmOptionActivity : AppCompatActivity(), AdapterView.OnItemSelectedLi
         radioButton = findViewById(radioButtonId)
 
         var option = radioButton.text.toString()
+
+        // Check if it is the custom radio button
         if (radioButtonId == R.id.radioButtonCustom) {
             val preAlertValueOption = findViewById<EditText>(R.id.editTextNumberPreAlertValue).text.toString()
             option = "$preAlertValueOption $textPreAlertOption"

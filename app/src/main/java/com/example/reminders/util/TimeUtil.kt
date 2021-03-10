@@ -52,26 +52,81 @@ object TimeUtil {
         }
     }
 
-    private fun convertDate(timeInMillis: Long): String =
-        DateFormat.format("dd/MM/yyyy hh:mm:ss", timeInMillis).toString()
-//
-//    fun computeNextHour(interval: Int, currentHour: Int): Int {
-//        return (currentHour + interval) % 24
-//    }
-//
-//    fun computeNextDay(interval: Int, currentDay: Int, currentMonth: Int, currentYear: Int): Int {
-//        if (interval + currentDay <= Months.values()[currentMonth].days)
-//            return currentDay + interval
-//        else if (cu)
-//    }
-//
-//    fun checkLeapYear(year: Int): Boolean {
-//        return if (year % 4 == 0) {
-//            if (year % 100 == 0) {
-//                year % 400 == 0
-//            } else
-//                true
-//        } else
-//            false
-//    }
+    /**
+     * Convert milliseconds to a date format
+     */
+    fun convertDate(timeInMillis: Long): String =
+        DateFormat.format("dd/MM/yyyy HH:mm:ss", timeInMillis).toString()
+
+    // Get hour from a string formatted as a date: 09/03/2021 06:03:00
+    fun getHour(date: String): Int =
+        date.split(' ')[1].split(':')[0].toInt()
+
+    // Get day from a string formatted as a date: 09/03/2021 06:03:00
+    fun getDay(date: String): Int =
+        date.split(' ')[0].split('/')[0].toInt()
+
+    // Get month from a string formatted as a date: 09/03/2021 06:03:00
+    fun getMonth(date: String): Int =
+        date.split(' ')[0].split('/')[1].toInt()
+
+    // Get year from a string formatted as a date: 09/03/2021 06:03:00
+    fun getYear(date: String): Int =
+        date.split(' ')[0].split('/')[2].toInt()
+
+    /**
+     * Compute year
+     * If the current month + the number of months > 12 -> increment the year
+     */
+    fun computeYear(intervalValueMonth: Int, currentMonth: Int, currentYear: Int) =
+        if (currentMonth + intervalValueMonth > 12) currentYear + 1 else currentYear
+
+    /**
+     * Compute year
+     * Return the month index, check if the addition exceeds 12
+     */
+    fun computeMonth(intervalValueMonth: Int, currentMonth: Int) = (currentMonth + intervalValueMonth) % 12
+
+    /**
+     * Compute day based on repetitive months
+     */
+    fun computeDay(intervalValueMonth: Int, currentMonth: Int, currentYear: Int, originalDay: Int): Int {
+        // Compute year and month
+        val year = computeYear(intervalValueMonth, currentMonth, currentYear)
+        val month = computeMonth(intervalValueMonth, currentMonth)
+        // Get the number of days of this month
+        var monthNumberOfDays = Months.values()[month-1].days
+
+        // Check if it is a leap year and month is february
+        if (leapYear(year) && month == Months.FEBRUARY.ordinal + 1)
+            monthNumberOfDays += 1
+
+        // Check if the original day of the reminder fit in the month`s number of days
+        return if (originalDay <= monthNumberOfDays)
+            originalDay
+        else
+            monthNumberOfDays
+    }
+
+    /**
+     * Compute day based on repetitive years
+     */
+    fun computeDay(originalDay: Int, currentMonth: Int, year: Int): Int {
+        // Get the number of days of this month
+        var monthNumberOfDays = Months.values()[currentMonth - 1].days
+
+        // Check if it is a leap year and month is february
+        if (leapYear(year) && currentMonth == Months.FEBRUARY.ordinal + 1)
+            monthNumberOfDays += 1
+
+        // Check if the original day of the reminder fit in the month`s number of days
+        return if (originalDay <= monthNumberOfDays)
+            originalDay
+        else
+            monthNumberOfDays
+    }
+
+    // Check the leap year
+    private fun leapYear(year: Int) = ((year % 400) == 0) || (((year % 4) == 0) && ((year % 100) != 0))
+
 }

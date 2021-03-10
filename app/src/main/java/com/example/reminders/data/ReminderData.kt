@@ -34,4 +34,5 @@ data class RepeatingDetails(
     var originalDay: Int = 0,
     var interval: Long = 0,
     var intervalUnit: IntervalUnit = IntervalUnit.DAY,
+    var weekOptions: WeekDays = WeekDays()
 )

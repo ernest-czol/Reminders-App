@@ -13,4 +13,5 @@ object ConstantsAlarm {
     const val DESCRIPTION_ALARM = "DESCRIPTION_ALARM"
     const val ACTION_SET_MAIN_ALARM = "ACTION_SET_MAIN_ALARM"
     const val ACTION_SIMPLE_ALARM = "ACTION_SIMPLE_ALARM"
+    const val WEEK_DAY_OPTION = "WEEK_DAY_OPTION"
 }

@@ -26,6 +26,7 @@ import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_PRE_ALA
 import com.example.reminders.constants.ConstantsRequestCode.REQUEST_CODE_REPEATING_ALARM
 import com.example.reminders.data.PreAlarm
 import com.example.reminders.data.Reminder
+import com.example.reminders.service.AlarmService
 import com.example.reminders.util.RandomUtil
 import com.example.reminders.util.TAG
 import com.example.reminders.util.TimeUtil
@@ -107,7 +108,7 @@ class AddReminderFragment : Fragment() {
             reminder.repeatingDetails.originalDay = reminder.day
 
             // Persist the reminder to db
-            reminderViewModel.addReminder(reminder, thisContext)
+            reminderViewModel.addReminder(reminder, AlarmService(thisContext))
 
             // Navigate to HomeFragment
             findNavController().navigate(
@@ -182,15 +183,18 @@ class AddReminderFragment : Fragment() {
             if (requestCode == REQUEST_CODE_REPEATING_ALARM) {
                 if (resultCode == AppCompatActivity.RESULT_OK) {
                     val option = data?.getStringExtra(ConstantsAlarm.REPEATING_ALARM_OPTION)
+                    val optionWeekDay = data?.getBooleanArrayExtra(ConstantsAlarm.WEEK_DAY_OPTION)
 
                     repeatingAlarmText.text = option
-
-                    Log.d(TAG, "$option")
 
                     if (option != getString(R.string.repeating_alarm_default_option)) {
                         reminder.repeatingDetails.isRepeating = true
                         reminder.repeatingDetails.interval = TimeUtil.getValue(option)
                         reminder.repeatingDetails.intervalUnit = TimeUtil.getIntervalUnit(option)
+                        // Initialise weekOptions
+                        optionWeekDay?.let {
+                            reminder.repeatingDetails.weekOptions.setValues(optionWeekDay)
+                        }
                     }
                 }
             }
@@ -212,7 +216,7 @@ class AddReminderFragment : Fragment() {
                     this.set(Calendar.DAY_OF_MONTH, day)
 
                     reminder.year = year
-                    reminder.month = month
+                    reminder.month = month + 1 // Calendar months start from 0 | Reminder from 1
                     reminder.day = day
 
                     TimePickerDialog(
